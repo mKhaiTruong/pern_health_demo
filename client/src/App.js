@@ -1,6 +1,6 @@
-import React, { Fragment, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HealthLayout from "./components/HealthLayout";
 
 function App() {
@@ -13,7 +13,7 @@ function App() {
         headers: { "Content-Type": "application/json" },
       });
       const allData = await response.json();
-      
+
       setHealthChecks(
         allData.map((item) => ({
           key: item.id,
@@ -41,7 +41,6 @@ function App() {
   }, []);
 
   return (
-    <Fragment>
       <Router>
         <Routes>
           <Route
@@ -55,7 +54,6 @@ function App() {
           />
         </Routes>
       </Router>
-    </Fragment>
   );
 }
 

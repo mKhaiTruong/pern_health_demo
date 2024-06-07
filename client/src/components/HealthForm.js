@@ -35,9 +35,7 @@ export default function HealthForm({ fetchHealthChecks }) {
       console.error(error);
     }
   };
-  const onReset = () => {
-    form.resetFields();
-  };
+  const onReset = () => form.resetFields();
   const onFill = () => {
     form.setFieldsValue({
       host_name: "Default PC",
@@ -58,7 +56,7 @@ export default function HealthForm({ fetchHealthChecks }) {
         rules={[
           {
             required: true,
-            message: 'Please input your PC name!',
+            message: "Please input your PC name!",
           },
         ]}
         style={{ maxWidth: "98%" }}
