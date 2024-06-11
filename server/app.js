@@ -1,21 +1,51 @@
+require("dotenv").config();
 const express = require("express");
-const path = require("path");
 const cors = require("cors");
+const session = require("express-session");
+const passport = require("passport");
+const flash = require("express-flash");
+
 const healthRouter = require("./routes/health.router");
+const authRouter = require("./routes/auth.router");
+require("./passportConfig")(passport);
 
 const app = express();
 
 // Middleware
 app.use(cors());
-app.use(express.json()); // Parses incoming JSON requests -> parsed data in req.body
-app.use(express.static(path.join(__dirname, "client/build")));
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
-// Routes
-app.use("/", healthRouter);
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // Set to true if using https
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
+    },
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
 
-// Catch-all handler to serve the React app
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client/build", "index.html"));
+app.use((req, res, next) => {
+  res.locals.success_msg = req.flash("success_msg");
+  res.locals.error_msg = req.flash("error_msg");
+  res.locals.error = req.flash("error");
+  next();
+});
+
+// API Routes
+app.use("/health", healthRouter);
+app.use("/auth", authRouter);
+
+// Error handling for API routes
+app.use((err, req, res, next) => {
+  console.error("API error:", err);
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
 // Start server

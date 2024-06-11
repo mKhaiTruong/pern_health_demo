@@ -1,9 +1,9 @@
 import React from "react";
 import { theme } from "antd";
-import HealthForm from "./HealthForm";
-import HealthTable from "./HealthTable";
+import HealthCard from "../../components/Card/HealthCard";
+import HealthDate from "../../components/DateTime/HealthDate";
 
-export default function HealthInput({ healthChecks, fetchHealthChecks }) {
+export default function HealthInformation({ user, fetchHealthChecks }) {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -21,12 +21,17 @@ export default function HealthInput({ healthChecks, fetchHealthChecks }) {
     >
       <div className="row">
         <div className="col-12 text-center mb-5">
-          <h3>Input new Node Health Status</h3>
+          <h3>Your information</h3>
         </div>
+      </div>
 
-        <HealthForm fetchHealthChecks={fetchHealthChecks}/>
-
-        <HealthTable healthChecks={healthChecks} fetchHealthChecks={fetchHealthChecks} />
+      <div className="row justify-content-around">
+        <div className="col-4 text-center mb-5">
+          <HealthCard user={user} />
+        </div>
+        <div className="col-6 mb-5">
+          <HealthDate />
+        </div>
       </div>
     </div>
   );

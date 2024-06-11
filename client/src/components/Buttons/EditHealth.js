@@ -1,8 +1,9 @@
 import { Button, Modal, Input } from "antd";
 import React, { useState } from "react";
 import { EditOutlined } from "@ant-design/icons";
+import axios from "axios";
 
-export default function EditHealth({ hostName, id, fetchHealthChecks }) {
+export default function EditHealth({ hostName, email, fetchHealthChecks }) {
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [inputValue, setInputValue] = useState(hostName);
@@ -14,10 +15,9 @@ export default function EditHealth({ hostName, id, fetchHealthChecks }) {
   const handleOk = async () => {
     setConfirmLoading(true);
     try {
-      await fetch(`http://localhost:9000/metrics/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ hostName: inputValue }),
+      await axios.put("http://localhost:9000/health/email", {
+        hostName: inputValue,
+        email: email,
       });
 
       fetchHealthChecks();

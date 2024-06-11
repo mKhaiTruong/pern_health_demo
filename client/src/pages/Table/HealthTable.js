@@ -1,17 +1,14 @@
 import React from "react";
 import { Button, Table, Tag } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import EditHealth from "./Buttons/EditHealth";
+import EditHealth from "../../components/Buttons/EditHealth";
+import axios from "axios";
 
 const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
   const handleOnDelete = async (id) => {
     try {
-      await fetch(`http://localhost:9000/metrics/${id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      fetchHealthChecks(); // Fetch updated list
+      await axios.delete(`http://localhost:9000/health/${id}`);
+      fetchHealthChecks();
     } catch (error) {
       console.error(error);
     }
@@ -74,7 +71,7 @@ const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
         <EditHealth
           hostName={record.hostName}
           fetchHealthChecks={fetchHealthChecks}
-          id={record.key}
+          email={record.email}
         />
       ),
       fixed: "right",
@@ -100,11 +97,7 @@ const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
   ];
 
   return (
-    <Table
-      columns={columns}
-      dataSource={healthChecks}
-      scroll={{ y: 200 }}
-    />
+    <Table columns={columns} dataSource={healthChecks} scroll={{ y: 200 }} />
   );
 };
 export default HealthTable;
