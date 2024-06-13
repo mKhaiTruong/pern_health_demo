@@ -2,10 +2,10 @@ const bcrypt = require("bcrypt");
 const passport = require("passport");
 const pool = require("../db");
 const { addNewHealthCheck } = require("./sharedController");
+const gun = require("../gun");
 
 async function register(req, res) {
   const { hostName, email, password, password2 } = req.body;
-  console.log("Register request body:", req.body); 
   if (password !== password2) {
     return res.status(400).json({ message: "Passwords do not match" });
   }
@@ -26,9 +26,8 @@ async function register(req, res) {
       [hostName, email, hashedPassword]
     );
 
-    // Add new health check record
-    const newHealthCheck = await addNewHealthCheck(email, hostName);
-    console.log("New Health Check:", newHealthCheck); // Log the new health check
+    await addNewHealthCheck(email, hostName);
+    gun.get("users").set({ hostName, email, hashedPassword });
 
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
@@ -36,26 +35,8 @@ async function register(req, res) {
     res.status(500).send("Server Error");
   }
 }
-async function updateHostname(req, res) {
-  const { hostName, email } = req.body;
 
-  try {
-    const { rows } = await pool.query(
-      "UPDATE authentication SET host_name = $1 WHERE email = $2 RETURNING *",
-      [hostName, email]
-    );
-
-    if (rows.length > 0) {
-      res.json(rows[0]);
-    } else {
-      res.status(404).json({ msg: "Metric not found" });
-    }
-  } catch (err) {
-    res.status(500).json({ msg: "Internal Server Error" });
-  }
-}
-
-function login(req, res, next) {
+async function login(req, res, next) {
   passport.authenticate("local", (err, user, info) => {
     if (err) {
       return next(err);
@@ -80,11 +61,31 @@ function login(req, res, next) {
   })(req, res, next);
 }
 
-function logout(req, res) {
+async function logout(req, res) {
   req.logout(() => {
     req.flash("success_msg", "You have logged out successfully");
     res.status(200).json({ message: "Logged out successfully" });
   });
+}
+
+async function updateHostname(req, res) {
+  const { hostName, email } = req.body;
+
+  try {
+    const { rows } = await pool.query(
+      "UPDATE authentication SET host_name = $1 WHERE email = $2 RETURNING *",
+      [hostName, email]
+    );
+
+    if (rows.length > 0) {
+      gun.get("healthChecks").get(email).put({ hostName });
+      res.json(rows[0]);
+    } else {
+      res.status(404).json({ msg: "Metric not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ msg: "Internal Server Error" });
+  }
 }
 
 module.exports = { login, register, logout, updateHostname };

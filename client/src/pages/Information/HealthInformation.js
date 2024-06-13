@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useContext } from "react";
 import { theme } from "antd";
 import HealthCard from "../../components/Card/HealthCard";
 import HealthDate from "../../components/DateTime/HealthDate";
 
-export default function HealthInformation({ user, fetchHealthChecks }) {
+export default function HealthInformation({ fetchHealthChecks }) {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -27,7 +27,7 @@ export default function HealthInformation({ user, fetchHealthChecks }) {
 
       <div className="row justify-content-around">
         <div className="col-4 text-center mb-5">
-          <HealthCard user={user} />
+          <HealthCard fetchHealthChecks={fetchHealthChecks} />
         </div>
         <div className="col-6 mb-5">
           <HealthDate />

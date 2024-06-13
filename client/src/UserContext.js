@@ -1,6 +1,8 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from "react";
+import Gun from "gun";
 
 const UserContext = createContext();
+const gun = Gun(["http://172.16.131.85:9000/gun"]);
 
 const UserProvider = ({ children }) => {
   const [user, setUser] = useState({
@@ -20,7 +22,7 @@ const UserProvider = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
+    <UserContext.Provider value={{ user, setUser, gun }}>
       {children}
     </UserContext.Provider>
   );

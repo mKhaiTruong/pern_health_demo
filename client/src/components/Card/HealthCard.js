@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { EditOutlined, EllipsisOutlined } from "@ant-design/icons";
 import { Avatar, Card, Modal, Input, Typography } from "antd";
 import LogoutHealth from "../Buttons/LogoutHealth";
+import { UserContext } from "../../UserContext";
 
 const { Meta } = Card;
 
-const HealthCard = ({ user }) => {
+const HealthCard = ({ fetchHealthChecks }) => {
+  const { user } = useContext(UserContext);
   const { id, hostName, email } = user;
   const [description, setDescription] = useState("You have not added anything");
   const [inputValue, setInputValue] = useState("");
@@ -15,6 +17,8 @@ const HealthCard = ({ user }) => {
   const [avatarSrc, setAvatarSrc] = useState("");
 
   useEffect(() => {
+    fetchHealthChecks();
+    console.log("HELOOO + " + hostName);
     setCoverSrc(`https://picsum.photos/id/${id}/300/175?`);
     setAvatarSrc(`https://api.dicebear.com/7.x/miniavs/svg?seed=${id}`);
   }, [id]);
@@ -33,8 +37,12 @@ const HealthCard = ({ user }) => {
 
   const handleOk = async () => {
     setConfirmLoading(true);
-    setDescription(inputValue);
-    setOpen(false);
+    try {
+      setDescription(inputValue);
+      setOpen(false);
+    } catch (error) {
+      console.error(error);
+    }
     setConfirmLoading(false);
   };
 
@@ -76,7 +84,7 @@ const HealthCard = ({ user }) => {
       >
         <Input
           size="large"
-          placeholder="Update description"
+          placeholder="Update host name"
           value={inputValue}
           onChange={handleInputChange}
         />

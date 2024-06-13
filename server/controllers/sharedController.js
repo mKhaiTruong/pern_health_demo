@@ -1,5 +1,6 @@
 const pool = require("../db");
 const osu = require("node-os-utils");
+const gun = require("../gun");
 const { cpu, mem } = osu;
 
 const getSystemMetrics = async () => {
@@ -8,7 +9,7 @@ const getSystemMetrics = async () => {
   const responseTime = Math.random();
 
   return {
-    status: cpuUsage < 80 ? "Healthy" : "Unhealthy",
+    status: cpuUsage < 1 ? "Healthy" : "Unhealthy",
     response_time: responseTime,
     cpu_usage: cpuUsage,
     memory_usage: memUsage.usedMemMb,
@@ -32,6 +33,8 @@ const addNewHealthCheck = async (email, hostName) => {
         new Date(),
       ]
     );
+
+    gun.get("healthChecks").set(rows[0]);
     return rows[0];
   } catch (error) {
     console.error("Error in addNewHealthCheck:", error);

@@ -8,7 +8,7 @@ const HealthDate = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentDate(new Date());
-    }, 1000);
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 

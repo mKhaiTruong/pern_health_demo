@@ -15,7 +15,7 @@ const LogoutHealth = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post("http://localhost:9000/auth/logout");
+      await axios.post("http://172.16.131.85:9000/auth/logout");
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("userId");
       localStorage.removeItem("hostName");

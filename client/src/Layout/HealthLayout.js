@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import {
   BorderlessTableOutlined,
   FileOutlined,
@@ -13,6 +13,7 @@ import HealthViewTable from "../pages/Table/HealthViewTable";
 import HealthInformation from "../pages/Information/HealthInformation";
 import HealthSider from "../components/Sider/HealthSider";
 import StruggleDoc from "../components/Doc/StruggleDoc";
+import { UserContext } from "../UserContext";
 import axios from "axios";
 
 const { Content, Footer } = Layout;
@@ -20,6 +21,7 @@ const { Content, Footer } = Layout;
 function getItem(label, key, icon, path, children = []) {
   return { key, icon, path, children, label };
 }
+
 const items = [
   getItem("Adding Health Check", "1", <UserAddOutlined />, "/add-health-check"),
   getItem("View Table", "2", <BorderlessTableOutlined />, "/view-table"),
@@ -35,26 +37,36 @@ const items = [
   getItem("Files", "9", <FileOutlined />, "/files"),
 ];
 
-const HealthLayout = ({ healthChecks, fetchHealthChecks, user }) => {
+const HealthLayout = ({ healthChecks, fetchHealthChecks }) => {
   const [collapsed, setCollapsed] = useState(false);
+  const { user, gun } = useContext(UserContext);
 
   useEffect(() => {
     const intervalId = setInterval(async () => {
       try {
-        await axios.post("http://localhost:9000/health/addNew", {
+        await axios.post("http://172.16.131.85:9000/health/addNew", {
           hostName: user.hostName,
           email: user.email,
         });
-        console.log("Successfully added")
+        console.log("Successfully added");
         fetchHealthChecks();
       } catch (error) {
         console.error("Error fetching health checks:", error);
-        // Show notification for error
       }
-    }, 10000); // Fetch every 10 seconds
+    }, 10000); 
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
-  }, [fetchHealthChecks, user.hostName, user.email]);
+    const healthChecksRef = gun.get("healthChecks");
+    healthChecksRef.on((data) => {
+      if (data && data.healthChecks) {
+        fetchHealthChecks(data.healthChecks);
+      }
+    });
+
+    return () => {
+      clearInterval(intervalId); // Cleanup interval on unmount
+      healthChecksRef.off(); // Unsubscribe from Gun.js updates
+    };
+  }, [fetchHealthChecks, gun, user.hostName, user.email]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -71,7 +83,6 @@ const HealthLayout = ({ healthChecks, fetchHealthChecks, user }) => {
               path="/add-health-check"
               element={
                 <HealthInformation
-                  user={user}
                   fetchHealthChecks={fetchHealthChecks}
                 />
               }

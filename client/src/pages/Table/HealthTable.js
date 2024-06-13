@@ -1,13 +1,22 @@
-import React from "react";
+import React, { useContext } from "react";
 import { Button, Table, Tag } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import EditHealth from "../../components/Buttons/EditHealth";
+import { UserContext } from "../../UserContext";
 import axios from "axios";
 
 const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
+  const { gun } = useContext(UserContext);
+
   const handleOnDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:9000/health/${id}`);
+      // Delete from health database
+      await axios.delete(`http://172.16.131.85:9000/health/${id}`);
+
+      // Delete from Gun.js database
+      const healthChecksRef = gun.get("healthChecks");
+      healthChecksRef.get(id).put(null);
+
       fetchHealthChecks();
     } catch (error) {
       console.error(error);
@@ -32,6 +41,12 @@ const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
       key: "hostName",
     },
     {
+      title: "Email",
+      width: "30%",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
       title: "Status",
       key: "status",
       dataIndex: "status",
@@ -54,15 +69,16 @@ const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
       title: "CPU Usage",
       dataIndex: "cpuUsage",
       key: "cpuUsage",
-      width: "20%",
+      width: "16%",
+      align: "center",
     },
     {
       title: "Memory Usage",
       dataIndex: "memoryUsage",
       key: "memoryUsage",
       width: "20%",
+      align: "center",
     },
-
     {
       title: "Edit",
       dataIndex: "edit",
@@ -70,8 +86,8 @@ const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
       render: (text, record) => (
         <EditHealth
           hostName={record.hostName}
-          fetchHealthChecks={fetchHealthChecks}
           email={record.email}
+          fetchHealthChecks={fetchHealthChecks}
         />
       ),
       fixed: "right",
@@ -100,4 +116,5 @@ const HealthTable = ({ healthChecks, fetchHealthChecks }) => {
     <Table columns={columns} dataSource={healthChecks} scroll={{ y: 200 }} />
   );
 };
+
 export default HealthTable;

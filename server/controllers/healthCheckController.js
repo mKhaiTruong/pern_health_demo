@@ -1,6 +1,6 @@
 const pool = require("../db");
-const { updateHostname: updateAuthHostname } = require("./authController");
 const { addNewHealthCheck } = require("./sharedController");
+const gun = require("../gun");
 
 const healthController = {
   getAll: async (req, res) => {
@@ -19,15 +19,15 @@ const healthController = {
       const { hostName, email } = req.body;
       if (!hostName) return res.status(400).send("Host name is required");
       if (!email) return res.status(400).send("Email is required");
-      
+
       const newHealthCheck = await addNewHealthCheck(email, hostName);
+
       res.json(newHealthCheck);
     } catch (error) {
       console.error("Error in addNew:", error);
       res.status(500).json({ msg: "Internal Server Error" });
     }
   },
-
   getById: async (req, res) => {
     try {
       const { rows } = await pool.query(
@@ -50,6 +50,8 @@ const healthController = {
       const { rows } = await pool.query(sql, [req.params.id]);
 
       if (rows.length > 0) {
+        gun.get("healthChecks").get(req.params.id).put(null);
+
         res.json(rows[0]);
       } else {
         res.status(404).json({ msg: "Metric not found" });
@@ -59,7 +61,6 @@ const healthController = {
       res.status(500).json({ msg: "Internal Server Error" });
     }
   },
-
   getByEmail: async (req, res) => {
     try {
       const { rows } = await pool.query(
@@ -82,17 +83,18 @@ const healthController = {
       if (!hostName) return res.status(400).send("Host name is required");
       if (!email) return res.status(400).send("Email is required");
 
-      const sql =
+      let sql =
         "UPDATE healthdb SET host_name = $1 WHERE email = $2 RETURNING *";
-      const { rows } = await pool.query(sql, [hostName, email]);
+      let { rows } = await pool.query(sql, [hostName, email]);
+
+      sql =
+        "UPDATE authentication SET host_name = $1 WHERE email = $2 RETURNING *";
+      ({ rows } = await pool.query(sql, [hostName, email]));
 
       if (rows.length > 0) {
-        if (!req.isRecursive) {
-          req.isRecursive = true;
-          await updateAuthHostname(req, res);
-        } else {
-          res.json(rows[0]);
-        }
+        gun.get("users").get(email).put({ hostName });
+        gun.get("healthChecks").get(email).put({ hostName });
+        res.json(rows[0]);
       } else {
         res.status(404).json({ msg: "Metric not found" });
       }
@@ -107,6 +109,7 @@ const healthController = {
       const { rows } = await pool.query(sql, [req.body.email]);
 
       if (rows.length > 0) {
+        gun.get("healthChecks").get(req.body.email).put(null);
         res.json(rows[0]);
       } else {
         res.status(404).json({ msg: "Metric not found" });

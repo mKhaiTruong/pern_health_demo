@@ -4,7 +4,7 @@ const router = express.Router();
 const healthController = require("../controllers/healthCheckController");
 
 // Routes for general operations
-router.get("/", healthController.getAll);
+router.get("/", healthController.getAll); 
 router.post("/addNew", healthController.addNew);
 router.get("/:id", healthController.getById);
 router.delete("/:id", healthController.deleteById);

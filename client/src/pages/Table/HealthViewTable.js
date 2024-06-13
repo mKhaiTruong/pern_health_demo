@@ -12,7 +12,7 @@ const HealthViewTable = ({ healthChecks, fetchHealthChecks }) => {
   const createTransformedData = (type) => {
     return healthChecks.map((item) => ({
       type,
-      hostName: item.hostName,
+      email: item.email,
       usage: type === "CPU Usage" ? item.cpuUsage : item.memoryUsage,
     }));
   };
@@ -20,7 +20,7 @@ const HealthViewTable = ({ healthChecks, fetchHealthChecks }) => {
   const createConfig = (data, color, title) => {
     return {
       data,
-      xField: "hostName",
+      xField: "email",
       yField: "usage",
       style: {
         fill: color,

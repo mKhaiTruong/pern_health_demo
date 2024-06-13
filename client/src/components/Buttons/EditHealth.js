@@ -1,12 +1,14 @@
+import React, { useState, useContext } from "react";
 import { Button, Modal, Input } from "antd";
-import React, { useState } from "react";
 import { EditOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { UserContext } from "../../UserContext";
 
 export default function EditHealth({ hostName, email, fetchHealthChecks }) {
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [inputValue, setInputValue] = useState(hostName);
+  const { user, setUser } = useContext(UserContext);
 
   const showModal = () => {
     setOpen(true);
@@ -15,11 +17,14 @@ export default function EditHealth({ hostName, email, fetchHealthChecks }) {
   const handleOk = async () => {
     setConfirmLoading(true);
     try {
-      await axios.put("http://localhost:9000/health/email", {
+      await axios.put("http://172.16.131.85:9000/health/email", {
         hostName: inputValue,
         email: email,
       });
 
+      localStorage.setItem("hostName", inputValue);
+      setUser({ id: user.id, hostName: inputValue, email: user.email });
+      console.log("Updated hostName in localStorage:", inputValue);
       fetchHealthChecks();
     } catch (error) {
       console.error(error);
