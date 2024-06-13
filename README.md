@@ -1,0 +1,1 @@
+Adding Gun js as a decentralised database for connecting peer to peer. And because now it runs on multi master network, instead of using localhost:3000(default), you need to use http://<your-IPV4-address>:3000
